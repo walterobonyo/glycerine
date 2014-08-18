@@ -1,7 +1,13 @@
 request = require('request')
 url     = require('url')
+_       = require('lodash')
 
-{GlycerineNoCredentialsError, GlycerineAPIError, GlycerineHTTPError} = require('./errors')
+{
+  GlycerineNoCredentialsError,
+  GlycerineAPIError,
+  GlycerineHTTPError,
+  GlycerineResourceNotFoundError
+} = require('./errors')
 
 class Glycerine
   key: null
@@ -18,11 +24,28 @@ class Glycerine
     @host ||= 'nitro.stage.api.bbci.co.uk'
 
     throw new GlycerineNoCredentialsError(
-      'You must supply a Nitro API key to Glycerine\'s constructor in some way.'
-    ) unless @key    
+      "You must supply a Nitro API key to Glycerine's constructor in some way."
+    ) unless @key
+
+  resource: (resourceName, done) ->
+    @_retrieveResources (err, resources) =>
+      return done(err) if err
+
+      resource = _.find(resources.feeds.feed, name: resourceName)
+
+      unless resource
+        return done(new GlycerineResourceNotFoundError("Can't find #{resourceName}"))
+
+      @resourceFromHref(resource.href, done)
+
+  resourceFromHref: (href, done) ->
+    @_makeRequest href, (err, resource) ->
+      return done(err) if err
+
+      done(null, resource.nitro)
 
   _retrieveResources: (done) ->
-    done(null, @_resources) if @_resources
+    return done(null, @_resources) if @_resources
 
     @_makeRequest '/nitro/api', (err, resources) =>
       return done(err) if err

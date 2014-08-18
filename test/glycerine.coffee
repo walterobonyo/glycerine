@@ -1,5 +1,5 @@
 Glycerine = require('../lib/glycerine')
-{GlycerineNoCredentialsError, GlycerineAPIError, GlycerineHTTPError} = require('../lib/errors')
+{GlycerineNoCredentialsError, GlycerineAPIError, GlycerineHTTPError, GlycerineResourceNotFoundError} = require('../lib/errors')
 
 describe 'Glycerine', ->
   describe 'constructor', ->
@@ -24,13 +24,28 @@ describe 'Glycerine', ->
         new Glycerine()
       ).to.throw(GlycerineNoCredentialsError)
 
-  describe '_retrieveResources', ->
+  describe '#resource', ->
     before ->
       @g = new Glycerine('AngZeAC95PmW9w6ClTp4Ymyxjj0jpwPw')
 
-    it 'should yield a list of endpoints'
+    it 'should return a resource if found', (done) ->
+      @g.resource 'Programmes', (err, resource) ->
+        expect(err).to.be.null
+        expect(resource).to.be.an('object')
+        done()
 
-  describe '_makeRequest', ->
+    it "should yield a GlycerineResourceNotFoundError if the resource can't be found", (done) ->
+      @g.resource 'Baked Potatoes', (err) ->
+        expect(err).to.be.an.instanceOf(GlycerineResourceNotFoundError)
+        done()
+
+  describe '#_retrieveResources', ->
+    before ->
+      @g = new Glycerine('AngZeAC95PmW9w6ClTp4Ymyxjj0jpwPw')
+
+    it 'should yield a list of resources'
+
+  describe '#_makeRequest', ->
     beforeEach ->
       @g = new Glycerine('AngZeAC95PmW9w6ClTp4Ymyxjj0jpwPw')
 
@@ -54,7 +69,7 @@ describe 'Glycerine', ->
         expect(err).to.be.an.instanceOf(GlycerineHTTPError)
         done()
 
-  describe '_urlFor', ->
+  describe '#_urlFor', ->
     beforeEach ->
       @g = new Glycerine(key: 'abcdef', host: 'example.com')
 
