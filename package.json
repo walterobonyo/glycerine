@@ -1,0 +1,22 @@
+{
+  "name": "glycerine",
+  "version": "0.0.0-dev",
+  "description": "A library to ease consumption of the BBC's Nitro API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "bbc",
+    "nitro"
+  ],
+  "author": "Codegent",
+  "license": "MIT",
+  "dependencies": {
+    "request": "^2.40.0"
+  },
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "mocha": "^1.21.4"
+  }
+}
