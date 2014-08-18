@@ -39,10 +39,23 @@ class Glycerine
       @resourceFromHref(resource.href, done)
 
   resourceFromHref: (href, done) ->
-    @_makeRequest href, (err, resource) ->
+    @_makeRequest href, (err, resource) =>
       return done(err) if err
 
-      done(null, resource.nitro)
+      done(null, @_formatResourceObject(resource.nitro))
+
+  _formatResourceObject: (resource) ->
+    format = (object) =>
+      for key, value of object
+        if typeof value is 'object' and value.href
+          object[key] = (done) =>
+            @resourceFromHref(value.href, done)
+        else if typeof value is 'object' or typeof value is 'array'
+          object[key] = format(value)
+
+      object
+
+    format(resource)
 
   _retrieveResources: (done) ->
     return done(null, @_resources) if @_resources
