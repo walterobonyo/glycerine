@@ -39,6 +39,12 @@ describe 'Glycerine', ->
         expect(err).to.be.an.instanceOf(GlycerineResourceNotFoundError)
         done()
 
+    it 'should tolerate options', (done) ->
+      @g.resource 'Programmes', mixin: 'images', (err, resource) ->
+        expect(err).to.be.null
+        expect(resource).to.be.an('object')
+        done()
+
   describe '#_retrieveResources', ->
     before ->
       @g = new Glycerine('AngZeAC95PmW9w6ClTp4Ymyxjj0jpwPw')
@@ -50,22 +56,22 @@ describe 'Glycerine', ->
       @g = new Glycerine('AngZeAC95PmW9w6ClTp4Ymyxjj0jpwPw')
 
     it 'should yield some data if it receives a 2xx status code', (done) ->
-      @g._makeRequest '/nitro/api', done
+      @g._makeRequest '/nitro/api', {}, done
 
     it 'should yield a GlycerineAPIError if it gets a non-2xx status code with fault info', (done) ->
-      @g._makeRequest '/oh/god/i/really/hope/this/is/invalid', (err) ->
+      @g._makeRequest '/oh/god/i/really/hope/this/is/invalid', {}, (err) ->
         expect(err).to.be.an.instanceOf(GlycerineAPIError)
         done()
 
     it 'should yield a GlycerineHTTPError if it gets a non-2xx status code without fault info', (done) ->
       @g.host = 'example.com'
-      @g._makeRequest '/nope', (err) ->
+      @g._makeRequest '/nope', {}, (err) ->
         expect(err).to.be.an.instanceOf(GlycerineHTTPError)
         done()
 
     it 'should yield a GlycerineHTTPError if a generic HTTP error is encountered', (done) ->
       @g.host = 'nonexistenthostname'
-      @g._makeRequest '/nope', (err) ->
+      @g._makeRequest '/nope', {}, (err) ->
         expect(err).to.be.an.instanceOf(GlycerineHTTPError)
         done()
 

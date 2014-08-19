@@ -27,7 +27,11 @@ class Glycerine
       "You must supply a Nitro API key to Glycerine's constructor in some way."
     ) unless @key
 
-  resource: (resourceName, done) ->
+  resource: (resourceName, options, done) ->
+    if typeof options isnt 'object'
+      done = options
+      options = {}
+
     @_retrieveResources (err, resources) =>
       return done(err) if err
 
@@ -36,10 +40,10 @@ class Glycerine
       unless resource
         return done(new GlycerineResourceNotFoundError("Can't find #{resourceName}"))
 
-      @resourceFromHref(resource.href, done)
+      @resourceFromHref(resource.href, options, done)
 
-  resourceFromHref: (href, done) ->
-    @_makeRequest href, (err, resource) =>
+  resourceFromHref: (href, options, done) ->
+    @_makeRequest href, options, (err, resource) =>
       return done(err) if err
 
       done(null, @_formatResourceObject(resource.nitro))
@@ -60,15 +64,15 @@ class Glycerine
   _retrieveResources: (done) ->
     return done(null, @_resources) if @_resources
 
-    @_makeRequest '/nitro/api', (err, resources) =>
+    @_makeRequest '/nitro/api', {}, (err, resources) =>
       return done(err) if err
 
       @_resources = resources
       done(null, @_resources)
 
-  _makeRequest: (endpoint, done) ->
+  _makeRequest: (endpoint, options, done) ->    
     options =
-      url: @_urlFor(endpoint)
+      url: @_urlFor(endpoint, options)
       headers:
         Accept: 'application/json'
         'User-Agent': 'Glycerine'
@@ -87,9 +91,10 @@ class Glycerine
 
       done(null, body)
 
-  _urlFor: (endpoint) ->
+  _urlFor: (endpoint, options) ->
     resourceURL = url.parse("http://#{@host}#{endpoint}", true)
     resourceURL.query.api_key = @key
+    resourceURL.query = _.assign(resourceURL.query, options)
     delete resourceURL.search
     url.format(resourceURL)
 
